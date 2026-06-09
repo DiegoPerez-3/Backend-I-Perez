@@ -1,0 +1,14 @@
+{
+  "name": "entrega1-backend",
+  "version": "1.0.0",
+  "description": "Primera entrega de la materia Programacion Backend I: Desarrollo avanzado de Backend",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

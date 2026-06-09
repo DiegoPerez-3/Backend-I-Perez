@@ -1,0 +1,37 @@
+[
+  {
+    "id": "prod_1717900000000",
+    "title": "Laptop Gamer",
+    "description": "Alta performance para data science y gaming",
+    "code": "LP-100",
+    "price": 1250.99,
+    "status": true,
+    "stock": 15,
+    "category": "electrónica",
+    "thumbnails": [
+      "https://images.unsplash.com/photo-1603302576837-37561b2e2302"
+    ]
+  },
+  {
+    "id": "prod_1717900000001",
+    "title": "Mouse Inalámbrico",
+    "description": "Mouse ergonómico con sensor óptico de alta precisión",
+    "code": "MS-200",
+    "price": 45.5,
+    "status": true,
+    "stock": 50,
+    "category": "accesorios",
+    "thumbnails": []
+  },
+  {
+    "id": "prod_1717900000002",
+    "title": "Teclado Mecánico",
+    "description": "Teclado mecánico RGB con switches red",
+    "code": "KB-300",
+    "price": 89.99,
+    "status": true,
+    "stock": 25,
+    "category": "accesorios",
+    "thumbnails": []
+  }
+]
