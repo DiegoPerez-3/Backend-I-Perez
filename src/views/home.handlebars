@@ -1,0 +1,36 @@
+<div class="view-header">
+    <h1>Catálogo de Productos (SSR)</h1>
+    <p>Esta vista se renderiza del lado del servidor (SSR) mediante Handlebars. Para ver reflejados los cambios realizados desde la API HTTP, debes recargar esta página.</p>
+</div>
+
+<div class="catalog-section">
+    {{#if error}}
+        <div class="alert alert-danger">{{error}}</div>
+    {{/if}}
+
+    <div class="products-grid">
+        {{#each products}}
+            <div class="product-card">
+                <div class="product-badge">{{this.category}}</div>
+                <div class="product-content">
+                    <h3 class="product-title">{{this.title}}</h3>
+                    <p class="product-desc">{{this.description}}</p>
+                    <div class="product-meta">
+                        <span class="product-code">Código: <strong>{{this.code}}</strong></span>
+                        <span class="product-stock {{#if this.stock}}in-stock{{else}}no-stock{{/if}}">
+                            Stock: {{this.stock}}
+                        </span>
+                    </div>
+                </div>
+                <div class="product-footer">
+                    <span class="product-price">${{this.price}}</span>
+                    <span class="product-id">ID: {{this.id}}</span>
+                </div>
+            </div>
+        {{else}}
+            <div class="empty-state">
+                <p>No hay productos registrados en el catálogo actualmente.</p>
+            </div>
+        {{/each}}
+    </div>
+</div>

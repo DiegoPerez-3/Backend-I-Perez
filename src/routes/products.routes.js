@@ -68,6 +68,13 @@ productRouter.post("/", async (req, res) => {
 
         const product = await manager.addProduct(req.body);
 
+        // Emitimos la lista actualizada de productos vía sockets
+        const io = req.app.get("io");
+        if (io) {
+            const products = await manager.getProducts();
+            io.emit("products_updated", products);
+        }
+
         res.status(201).json({
             status: "success",
             data: product,
@@ -92,6 +99,13 @@ productRouter.put("/:pid", async (req, res) => {
             });
         }
 
+        // Emitimos la lista actualizada de productos vía sockets
+        const io = req.app.get("io");
+        if (io) {
+            const products = await manager.getProducts();
+            io.emit("products_updated", products);
+        }
+
         res.status(200).json({
             status: "success",
             data: product,
@@ -114,6 +128,13 @@ productRouter.delete("/:pid", async (req, res) => {
                 status: "error",
                 message: "Product not found",
             });
+        }
+
+        // Emitimos la lista actualizada de productos vía sockets
+        const io = req.app.get("io");
+        if (io) {
+            const products = await manager.getProducts();
+            io.emit("products_updated", products);
         }
 
         res.status(200).json({
