@@ -1,0 +1,42 @@
+<div class="product-detail-container">
+    <div class="breadcrumb">
+        <a href="/products">← Volver al Catálogo</a>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-header">
+            <span class="product-badge">{{product.category}}</span>
+            <h1>{{product.title}}</h1>
+            <p class="detail-code">Código del producto: <strong>{{product.code}}</strong></p>
+        </div>
+
+        <div class="detail-body">
+            <p class="detail-description">{{product.description}}</p>
+
+            <div class="detail-info-grid">
+                <div class="info-item">
+                    <span class="info-label">Precio:</span>
+                    <span class="info-value price-tag">${{product.price}}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Disponibilidad:</span>
+                    <span class="info-value {{#if product.stock}}in-stock{{else}}no-stock{{/if}}">
+                        {{#if product.stock}}Stock disponible ({{product.stock}} unidades){{else}}Sin stock en este momento{{/if}}
+                    </span>
+                </div>
+            </div>
+
+            <div class="add-to-cart-section">
+                <div class="quantity-input-group">
+                    <label for="detail-quantity">Cantidad:</label>
+                    <input type="number" id="detail-quantity" value="1" min="1" max="{{product.stock}}">
+                </div>
+
+                <button class="btn btn-add-cart-detail" data-id="{{product._id}}">
+                    🛒 Agregar al Carrito
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,87 +1,104 @@
-import __joiner from "../utils/paths.js";
-import fs from "fs/promises";
-import checkFileExists from "../utils/checkFile.js";
-
-const FILE_PATH = __joiner("products.json");
+import ProductModel from "../models/product.model.js";
 
 class ProductManager {
-    async _read() {
-        const exists = await checkFileExists(FILE_PATH);
-        if (!exists) return [];
-        try {
-            const data = await fs.readFile(FILE_PATH, "utf-8");
-            return JSON.parse(data);
-        } catch {
-            return [];
+    // Obtener productos con filtros, ordenamiento y paginación según requerimientos
+    async getProducts({ limit = 10, page = 1, sort, query, baseUrl = "/api/products" } = {}) {
+        // Conversión de tipos para limit y page
+        const parsedLimit = parseInt(limit, 10) > 0 ? parseInt(limit, 10) : 10;
+        const parsedPage = parseInt(page, 10) > 0 ? parseInt(page, 10) : 1;
+
+        // Armado del filtro (query por categoría o disponibilidad)
+        const filter = {};
+        if (query) {
+            if (query === "true" || query === "false") {
+                filter.status = query === "true";
+            } else if (query.toLowerCase() === "available" || query.toLowerCase() === "disponible") {
+                filter.status = true;
+                filter.stock = { $gt: 0 };
+            } else {
+                // Filtro case-insensitive por categoría
+                filter.category = { $regex: query, $options: "i" };
+            }
         }
+
+        // Opciones de paginación
+        const options = {
+            limit: parsedLimit,
+            page: parsedPage,
+            lean: true
+        };
+
+        // Ordenamiento por precio (asc / desc)
+        if (sort === "asc" || sort === "desc") {
+            options.sort = { price: sort === "asc" ? 1 : -1 };
+        }
+
+        // Ejecución de la paginación con el plugin de Mongoose
+        const result = await ProductModel.paginate(filter, options);
+
+        // Construcción de query string base para mantener los parámetros en los links prev/next
+        const queryParams = new URLSearchParams();
+        queryParams.set("limit", parsedLimit);
+        if (sort) queryParams.set("sort", sort);
+        if (query) queryParams.set("query", query);
+
+        const prevQueryParams = new URLSearchParams(queryParams);
+        prevQueryParams.set("page", result.prevPage);
+
+        const nextQueryParams = new URLSearchParams(queryParams);
+        nextQueryParams.set("page", result.nextPage);
+
+        // Retornamos la estructura exacta de respuesta exigida en la consigna
+        return {
+            status: "success",
+            payload: result.docs,
+            totalPages: result.totalPages,
+            prevPage: result.prevPage,
+            nextPage: result.nextPage,
+            page: result.page,
+            hasPrevPage: result.hasPrevPage,
+            hasNextPage: result.hasNextPage,
+            prevLink: result.hasPrevPage ? `${baseUrl}?${prevQueryParams.toString()}` : null,
+            nextLink: result.hasNextPage ? `${baseUrl}?${nextQueryParams.toString()}` : null
+        };
     }
 
-    async _write(data) {
-        await fs.writeFile(FILE_PATH, JSON.stringify(data, null, 2));
-    }
-
-    async getProducts() {
-        return await this._read();
-    }
-
+    // Obtener un producto específico por ID
     async getProductById(id) {
-        const products = await this._read();
-        return products.find((p) => p.id === id);
+        return await ProductModel.findById(id).lean();
     }
 
-    async addProduct(product) {
-        const products = await this._read();
-        const newProduct = {
-            id: `prod_${Date.now()}`,
-            title: product.title,
-            description: product.description,
-            code: product.code,
-            price: Number(product.price),
-            status: product.status !== undefined ? Boolean(product.status) : true,
-            stock: Number(product.stock),
-            category: product.category,
-            thumbnails: Array.isArray(product.thumbnails) ? product.thumbnails : []
-        };
-        products.push(newProduct);
-        await this._write(products);
-        return newProduct;
+    // Agregar un nuevo producto a la base de datos
+    async addProduct(productData) {
+        const newProduct = new ProductModel({
+            title: productData.title,
+            description: productData.description,
+            code: productData.code,
+            price: Number(productData.price),
+            status: productData.status !== undefined ? Boolean(productData.status) : true,
+            stock: Number(productData.stock),
+            category: productData.category,
+            thumbnails: Array.isArray(productData.thumbnails) ? productData.thumbnails : []
+        });
+
+        return await newProduct.save();
     }
 
+    // Actualizar un producto existente
     async updateProduct(id, updates) {
-        const products = await this._read();
-        const index = products.findIndex((p) => p.id === id);
+        // Excluimos la modificación del id original
+        const { id: _, _id, ...restUpdates } = updates;
 
-        if (index === -1) return null;
+        if (restUpdates.price !== undefined) restUpdates.price = Number(restUpdates.price);
+        if (restUpdates.stock !== undefined) restUpdates.stock = Number(restUpdates.stock);
+        if (restUpdates.status !== undefined) restUpdates.status = Boolean(restUpdates.status);
 
-        // Extraer id de los updates para asegurar que no se actualice
-        const { id: _, ...restUpdates } = updates;
-
-        const updatedProduct = {
-            ...products[index],
-            ...restUpdates,
-            id // mantener el id original
-        };
-
-        // Convertir tipos si es necesario
-        if (updatedProduct.price !== undefined) updatedProduct.price = Number(updatedProduct.price);
-        if (updatedProduct.stock !== undefined) updatedProduct.stock = Number(updatedProduct.stock);
-        if (updatedProduct.status !== undefined) updatedProduct.status = Boolean(updatedProduct.status);
-
-        products[index] = updatedProduct;
-
-        await this._write(products);
-        return updatedProduct;
+        return await ProductModel.findByIdAndUpdate(id, restUpdates, { new: true, runValidators: true }).lean();
     }
 
+    // Eliminar un producto
     async deleteProduct(id) {
-        const products = await this._read();
-        const index = products.findIndex((p) => p.id === id);
-
-        if (index === -1) return null;
-
-        const deletedProduct = products.splice(index, 1);
-        await this._write(products);
-        return deletedProduct[0];
+        return await ProductModel.findByIdAndDelete(id).lean();
     }
 }
 

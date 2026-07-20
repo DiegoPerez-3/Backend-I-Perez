@@ -1,0 +1,71 @@
+<div class="cart-view-container">
+    <div class="view-header">
+        <h1>Mi Carrito de Compras</h1>
+        <p class="cart-id-subtitle">ID del Carrito: <code>{{cartId}}</code></p>
+    </div>
+
+    {{#if error}}
+        <div class="alert alert-danger">{{error}}</div>
+    {{/if}}
+
+    {{#if hasProducts}}
+        <div class="cart-table-wrapper">
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Precio Unitario</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each products}}
+                        <tr>
+                            <td>
+                                <strong>{{this.title}}</strong>
+                                <br>
+                                <small class="text-muted">Cód: {{this.code}}</small>
+                            </td>
+                            <td><span class="product-badge">{{this.category}}</span></td>
+                            <td>${{this.price}}</td>
+                            <td>
+                                <div class="cart-qty-control">
+                                    <button class="btn-qty btn-minus" data-cid="{{../cartId}}" data-pid="{{this._id}}" data-qty="{{this.quantity}}">-</button>
+                                    <span class="qty-number">{{this.quantity}}</span>
+                                    <button class="btn-qty btn-plus" data-cid="{{../cartId}}" data-pid="{{this._id}}" data-qty="{{this.quantity}}">+</button>
+                                </div>
+                            </td>
+                            <td><strong>${{this.subtotal}}</strong></td>
+                            <td>
+                                <button class="btn btn-delete-cart-item" data-cid="{{../cartId}}" data-pid="{{this._id}}">
+                                    🗑️ Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="cart-summary-card">
+            <div class="summary-line">
+                <span>Total a Pagar:</span>
+                <span class="total-price">${{totalGeneral}}</span>
+            </div>
+            <div class="summary-actions">
+                <button class="btn btn-danger btn-clear-cart" data-cid="{{cartId}}">Vaciar Carrito</button>
+                <a href="/products" class="btn btn-secondary">Seguir Comprando</a>
+            </div>
+        </div>
+    {{else}}
+        <div class="empty-cart-state">
+            <div class="empty-icon">🛒</div>
+            <h2>Tu carrito está vacío</h2>
+            <p>Aún no has agregado productos a tu carrito de compras.</p>
+            <a href="/products" class="btn btn-primary">Ir al Catálogo</a>
+        </div>
+    {{/if}}
+</div>

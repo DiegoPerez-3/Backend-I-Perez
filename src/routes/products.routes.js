@@ -4,32 +4,26 @@ import ProductManager from "../managers/ProductManager.js";
 const productRouter = Router();
 const manager = new ProductManager();
 
-// GET /api/products -> listar todos los productos (con soporte para limit)
+// GET /api/products -> listar productos con paginación, filtros y ordenamiento
 productRouter.get("/", async (req, res) => {
     try {
-        let products = await manager.getProducts();
-        const { limit } = req.query;
+        const { limit, page, sort, query } = req.query;
+        
+        // Generamos la URL base dinámica para construir prevLink y nextLink
+        const baseUrl = `${req.protocol}://${req.get("host")}${req.baseUrl}`;
 
-        if (limit) {
-            const limitNum = parseInt(limit, 10);
-            if (!isNaN(limitNum) && limitNum > 0) {
-                products = products.slice(0, limitNum);
-            }
-        }
+        const result = await manager.getProducts({ limit, page, sort, query, baseUrl });
 
-        res.status(200).json({
-            status: "success",
-            data: products,
-        });
+        res.status(200).json(result);
     } catch (error) {
         res.status(500).json({
             status: "error",
-            message: error.message,
+            message: error.message
         });
     }
 });
 
-// GET /api/products/:pid -> obtener un producto por id
+// GET /api/products/:pid -> obtener un producto por su ID
 productRouter.get("/:pid", async (req, res) => {
     try {
         const product = await manager.getProductById(req.params.pid);
@@ -37,18 +31,18 @@ productRouter.get("/:pid", async (req, res) => {
         if (!product) {
             return res.status(404).json({
                 status: "error",
-                message: "Product not found",
+                message: "Producto no encontrado"
             });
         }
 
         res.status(200).json({
             status: "success",
-            data: product,
+            data: product
         });
     } catch (error) {
         res.status(500).json({
             status: "error",
-            message: error.message,
+            message: error.message
         });
     }
 });
@@ -62,27 +56,27 @@ productRouter.post("/", async (req, res) => {
         if (!title || !description || !code || price === undefined || stock === undefined || !category) {
             return res.status(400).json({
                 status: "error",
-                message: "All fields are required except thumbnails (title, description, code, price, stock, category)",
+                message: "Todos los campos son obligatorios excepto thumbnails (title, description, code, price, stock, category)"
             });
         }
 
         const product = await manager.addProduct(req.body);
 
-        // Emitimos la lista actualizada de productos vía sockets
+        // Notificamos la actualización vía WebSockets si io está disponible
         const io = req.app.get("io");
         if (io) {
-            const products = await manager.getProducts();
-            io.emit("products_updated", products);
+            const productsResult = await manager.getProducts({ limit: 100 });
+            io.emit("products_updated", productsResult.payload);
         }
 
         res.status(201).json({
             status: "success",
-            data: product,
+            data: product
         });
     } catch (error) {
         res.status(400).json({
             status: "error",
-            message: error.message,
+            message: error.message
         });
     }
 });
@@ -95,25 +89,25 @@ productRouter.put("/:pid", async (req, res) => {
         if (!product) {
             return res.status(404).json({
                 status: "error",
-                message: "Product not found",
+                message: "Producto no encontrado"
             });
         }
 
-        // Emitimos la lista actualizada de productos vía sockets
+        // Notificamos la actualización vía WebSockets
         const io = req.app.get("io");
         if (io) {
-            const products = await manager.getProducts();
-            io.emit("products_updated", products);
+            const productsResult = await manager.getProducts({ limit: 100 });
+            io.emit("products_updated", productsResult.payload);
         }
 
         res.status(200).json({
             status: "success",
-            data: product,
+            data: product
         });
     } catch (error) {
         res.status(400).json({
             status: "error",
-            message: error.message,
+            message: error.message
         });
     }
 });
@@ -126,26 +120,26 @@ productRouter.delete("/:pid", async (req, res) => {
         if (!deletedProduct) {
             return res.status(404).json({
                 status: "error",
-                message: "Product not found",
+                message: "Producto no encontrado"
             });
         }
 
-        // Emitimos la lista actualizada de productos vía sockets
+        // Notificamos la actualización vía WebSockets
         const io = req.app.get("io");
         if (io) {
-            const products = await manager.getProducts();
-            io.emit("products_updated", products);
+            const productsResult = await manager.getProducts({ limit: 100 });
+            io.emit("products_updated", productsResult.payload);
         }
 
         res.status(200).json({
             status: "success",
-            message: `Product with code ${deletedProduct.code} deleted successfully`,
-            data: deletedProduct,
+            message: `Producto con código ${deletedProduct.code} eliminado correctamente`,
+            data: deletedProduct
         });
     } catch (error) {
         res.status(400).json({
             status: "error",
-            message: error.message,
+            message: error.message
         });
     }
 });

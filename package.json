@@ -9,8 +9,11 @@
     "dev": "node --watch server.js"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-handlebars": "^9.0.1",
+    "mongoose": "^9.8.0",
+    "mongoose-paginate-v2": "^1.9.5",
     "socket.io": "^4.8.3"
   }
 }

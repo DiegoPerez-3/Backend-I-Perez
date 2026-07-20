@@ -4,32 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}</title>
-    <!-- Importamos una fuente moderna para dar una estética limpia y agradable -->
+    <!-- Importamos fuente moderna -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Vinculamos la hoja de estilos global -->
+    <!-- Hoja de estilos global -->
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <!-- Encabezado / Barra de Navegación simple -->
+    <!-- Navbar principal -->
     <header class="navbar">
         <div class="nav-container">
-            <span class="logo">CoderStore 🚀</span>
+            <a href="/products" class="logo">CoderStore 🚀</a>
             <nav class="nav-links">
-                <a href="/">[ Catálogo Home ]</a>
-                <a href="/realtimeproducts">[ Tiempo Real (Sockets) ]</a>
+                <a href="/products">[ Catálogo ]</a>
+                <a href="/realtimeproducts">[ Tiempo Real ]</a>
+                <a href="#" id="nav-cart-btn" class="cart-nav-link">[ Mi Carrito 🛒 ]</a>
             </nav>
         </div>
     </header>
 
-    <!-- Contenido principal dinámico -->
+    <!-- Contenido principal -->
     <main class="container">
         {{{body}}}
     </main>
 
     <footer class="footer">
-        <p>&copy; 2026 CoderStore. Desarrollado para Programación Backend I.</p>
+        <p>&copy; 2026 CoderStore. Entrega Final - Programación Backend I.</p>
     </footer>
+
+    <!-- Script para gestión global del carrito y localStorage -->
+    <script src="/js/cartClient.js"></script>
 </body>
 </html>

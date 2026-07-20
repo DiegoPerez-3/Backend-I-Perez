@@ -1,5 +1,5 @@
 <div class="view-header">
-    <h1>Panel de Productos en Tiempo Real (WebSockets)</h1>
+    <h1>Panel de Productos en Tiempo Real (WebSockets + MongoDB)</h1>
     <p>Esta vista utiliza WebSockets para actualizar el catálogo en tiempo real. Cualquier creación o eliminación se reflejará instantáneamente para todos los usuarios conectados.</p>
 </div>
 
@@ -63,10 +63,10 @@
                     </div>
                     <div class="product-footer">
                         <span class="product-price">${{this.price}}</span>
-                        <span class="product-id">ID: {{this.id}}</span>
+                        <span class="product-id">ID: {{this._id}}</span>
                     </div>
                     <div class="product-actions-bar">
-                        <button class="btn btn-delete" data-id="{{this.id}}">🗑️ Eliminar</button>
+                        <button class="btn btn-delete" data-id="{{this._id}}">🗑️ Eliminar</button>
                     </div>
                 </div>
             {{else}}

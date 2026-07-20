@@ -7,9 +7,10 @@ const productsContainer = document.getElementById("realtime-products-container")
 
 // Función para renderizar los productos de forma dinámica cuando hay cambios
 function renderProducts(products) {
+    if (!productsContainer) return;
     productsContainer.innerHTML = ""; // Limpiamos el contenedor
 
-    if (products.length === 0) {
+    if (!products || products.length === 0) {
         productsContainer.innerHTML = `
             <div class="empty-state">
                 <p>No hay productos registrados en el catálogo actualmente.</p>
@@ -19,6 +20,7 @@ function renderProducts(products) {
     }
 
     products.forEach((product) => {
+        const id = product._id || product.id;
         const productCard = document.createElement("div");
         productCard.classList.add("product-card");
 
@@ -36,10 +38,10 @@ function renderProducts(products) {
             </div>
             <div class="product-footer">
                 <span class="product-price">$${product.price}</span>
-                <span class="product-id">ID: ${product.id}</span>
+                <span class="product-id">ID: ${id}</span>
             </div>
             <div class="product-actions-bar">
-                <button class="btn btn-delete" data-id="${product.id}">🗑️ Eliminar</button>
+                <button class="btn btn-delete" data-id="${id}">🗑️ Eliminar</button>
             </div>
         `;
 
@@ -48,16 +50,16 @@ function renderProducts(products) {
 }
 
 // Delegación de eventos para el botón de eliminar
-// Esto permite escuchar clics tanto en los elementos renderizados inicialmente por SSR como en los cargados por Sockets
-productsContainer.addEventListener("click", (e) => {
-    // Si el elemento clickeado es el botón de eliminar o está dentro de él
-    const deleteButton = e.target.closest(".btn-delete");
-    if (deleteButton) {
-        const productId = deleteButton.getAttribute("data-id");
-        console.log("Emitiendo eliminación de producto con ID:", productId);
-        socket.emit("delete_product", productId);
-    }
-});
+if (productsContainer) {
+    productsContainer.addEventListener("click", (e) => {
+        const deleteButton = e.target.closest(".btn-delete");
+        if (deleteButton) {
+            const productId = deleteButton.getAttribute("data-id");
+            console.log("Emitiendo eliminación de producto con ID:", productId);
+            socket.emit("delete_product", productId);
+        }
+    });
+}
 
 // Escuchamos la lista inicial de productos al conectarse para sincronizar cualquier cambio
 socket.on("products_initial", (products) => {
@@ -98,7 +100,7 @@ if (productForm) {
                 price,
                 stock,
                 category,
-                status: true // valor por defecto
+                status: true
             };
 
             // Emitimos el producto por websocket al servidor
