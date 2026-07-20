@@ -1,29 +1,53 @@
-# Primera Entrega - Curso de Programación Backend I: Desarrollo Avanzado de Backend
+# Entrega Final - Curso de Programación Backend I
 
-Este proyecto consiste en el desarrollo de un servidor basado en **Node.js** y **Express** para la gestión de productos y carritos de compras de un e-commerce. Los datos se persisten localmente utilizando archivos de texto en formato JSON.
+Este proyecto consiste en el desarrollo del backend completo para una aplicación de **e-commerce**, construida sobre **Node.js**, **Express**, **MongoDB** y **Mongoose**. Incluye persistencia de datos profesional en la nube/local, motor de plantillas **Handlebars** con renderizado híbrido y comunicación bidireccional en tiempo real mediante **Socket.io**.
 
 ---
 
-## Estructura del Proyecto
+## 🛠️ Tecnologías Utilizadas
 
-La arquitectura del proyecto sigue el patrón de diseño y estructura recomendada por la cátedra:
+*   **Node.js**: Entorno de ejecución de JavaScript.
+*   **Express**: Framework web para la construcción de la API REST y servidor de vistas.
+*   **MongoDB & Mongoose**: Base de datos NoSQL y ODM para el modelado y la persistencia de datos.
+*   **mongoose-paginate-v2**: Plugin para paginación profesional de consultas de productos.
+*   **Express-Handlebars**: Motor de plantillas para vistas renderizadas del lado del servidor (SSR).
+*   **Socket.io**: WebSockets para sincronización de catálogo en tiempo real.
+*   **dotenv**: Gestión de variables de entorno de manera segura.
+
+---
+
+## 📂 Estructura del Proyecto
 
 ```text
-├── data/
-│   ├── carts.json
-│   └── products.json
 ├── src/
+│   ├── config/
+│   │   └── index.js                   # Configuración global y variables de entorno
+│   ├── connectors/
+│   │   └── mongo.connection.js        # Conexión a MongoDB y autosembrado de productos
 │   ├── managers/
-│   │   ├── CartManager.js
-│   │   └── ProductManager.js
+│   │   ├── CartManager.js             # Lógica de negocio para carritos
+│   │   └── ProductManager.js          # Lógica de negocio para productos (paginación, filtros)
+│   ├── models/
+│   │   ├── cart.model.js              # Esquema de carritos con referencias ObjectId (Product)
+│   │   └── product.model.js           # Esquema de productos con plugin de paginación
+│   ├── public/
+│   │   ├── css/styles.css             # Estilos CSS globales y responsive
+│   │   └── js/
+│   │       ├── cartClient.js          # Lógica cliente para interacción con el carrito
+│   │       └── realtime.js            # Cliente Socket.io para actualización en tiempo real
 │   ├── routes/
-│   │   ├── carts.routes.js
-│   │   └── products.routes.js
-│   ├── utils/
-│   │   ├── checkFile.js
-│   │   └── paths.js
-│   └── app.js
-├── .gitignore
+│   │   ├── carts.routes.js            # Endpoints de la API de carritos
+│   │   ├── products.routes.js         # Endpoints de la API de productos
+│   │   └── views.router.js            # Router exclusivo para renderizar vistas Handlebars
+│   └── views/
+│       ├── layouts/
+│       │   └── main.handlebars        # Layout principal de la aplicación
+│       ├── cart.handlebars            # Vista de un carrito específico con productos populados
+│       ├── home.handlebars            # Vista de catálogo estático
+│       ├── productDetail.handlebars   # Vista extendida de un producto seleccionado
+│       ├── products.handlebars        # Vista de catálogo paginado con filtros y ordenamiento
+│       └── realTimeProducts.handlebars# Vista interactiva con WebSockets
+├── .env.example
 ├── package.json
 ├── README.md
 └── server.js
@@ -31,95 +55,99 @@ La arquitectura del proyecto sigue el patrón de diseño y estructura recomendad
 
 ---
 
-## Requisitos Previos
+## 🚀 Requisitos Previos e Instalación
 
-- **Node.js** (versión 14 o superior recomendada)
-- **npm** (versión 6 o superior recomendada)
+### Requisitos
+- **Node.js** (versión 18 o superior recomendada)
+- **npm** o **yarn**
+- Instancia de **MongoDB** (Local en `127.0.0.1:27017` o una cuenta en **MongoDB Atlas**).
+
+### Pasos de Instalación
+1. Clona o descarga este repositorio.
+2. Abre una terminal en la carpeta raíz del proyecto.
+3. Instala las dependencias necesarias:
+   ```bash
+   npm install
+   ```
+4. Configura el archivo de variables de entorno `.env` en la raíz (puedes guiarte con `.env.example`):
+   ```env
+   PORT=8080
+   MONGO_URI=mongodb://127.0.0.1:27017/coderhouse_ecommerce
+   ```
+   *(Para usar MongoDB Atlas, reemplaza `MONGO_URI` con la cadena de conexión correspondiente).*
 
 ---
 
-## Instalación
+## 💻 Modo de Ejecución
 
-1. Clona este repositorio o descarga los archivos.
-2. Abre una terminal en la raíz del proyecto.
-3. Instala las dependencias necesarias ejecutando:
-
-```bash
-npm install
-```
-
-*(Nota para Windows: Si tienes problemas de políticas de ejecución al ejecutar comandos de npm en PowerShell, puedes usar `cmd /c npm install`)*.
-
----
-
-## Ejecución
-
-El servidor escucha por defecto en el puerto **8080**.
-
-### Modo Producción
-Para iniciar el servidor en modo normal:
+### Producción / Normal
 ```bash
 npm start
 ```
 
-### Modo Desarrollo
-Para iniciar el servidor con recarga automática en cambios (utilizando el flag `--watch` de Node.js):
+### Desarrollo (Con recarga en caliente `--watch`)
 ```bash
 npm run dev
 ```
 
+El servidor iniciará en `http://localhost:8080`.
+
+> **Nota:** La primera vez que el servidor se conecte a una base de datos vacía, **se sembrarán automáticamente 12 productos de prueba** para facilitar la visualización inmediata del catálogo.
+
 ---
 
-## Endpoints del Servidor
+## 🌐 Vistas Disponibles (Frontend)
 
-### 1. Gestión de Productos (`/api/products`)
+*   `GET /` / `GET /products`: Catálogo interactivo de productos con **paginación visual** (Anterior / Siguiente), formulario de búsqueda/filtro por categoría o disponibilidad, y selector de ordenamiento por precio.
+*   `GET /products/:pid`: Vista detallada del producto con descripción completa, stock, precio y botón para agregar unidades al carrito.
+*   `GET /carts/:cid`: Vista específica del carrito de compras donde se listan únicamente los productos pertenecientes al carrito (desglosados mediante `populate`), con su subtotal por ítem y el total general.
+*   `GET /realtimeproducts`: Panel interactivo sincronizado en tiempo real con WebSockets para agregar o eliminar productos instantáneamente.
+
+---
+
+## 📡 Referencia de la API REST
+
+### 1. Productos (`/api/products`)
 
 | Método | Endpoint | Descripción |
 | :--- | :--- | :--- |
-| **GET** | `/api/products` | Lista todos los productos. Soporta el query parameter `?limit=N` para limitar los resultados. |
-| **GET** | `/api/products/:pid` | Obtiene el detalle del producto con el ID especificado. |
-| **POST** | `/api/products` | Crea un nuevo producto (el `id` se autogenera). |
-| **PUT** | `/api/products/:pid` | Actualiza un producto existente por sus campos enviados en el body (sin alterar el `id`). |
-| **DELETE** | `/api/products/:pid` | Elimina el producto con el ID especificado. |
+| **GET** | `/api/products` | Devuelve los productos paginados (`limit`, `page`, `sort`, `query`). Respuesta estructurada con `payload`, `totalPages`, `prevLink`, `nextLink`, etc. |
+| **GET** | `/api/products/:pid` | Obtiene el detalle completo de un producto por su `ObjectId`. |
+| **POST** | `/api/products` | Crea un nuevo producto y notifica por WebSockets. |
+| **PUT** | `/api/products/:pid` | Actualiza un producto existente por su ID. |
+| **DELETE** | `/api/products/:pid` | Elimina un producto de la base de datos. |
 
-#### Formato para Crear/Actualizar Producto (POST / PUT)
+#### Ejemplo de Respuesta `GET /api/products`:
 ```json
 {
-  "title": "Teclado Mecánico RGB",
-  "description": "Teclado con switches red y retroiluminación configurable",
-  "code": "KB-301",
-  "price": 95.00,
-  "status": true,
-  "stock": 20,
-  "category": "accesorios",
-  "thumbnails": [
-    "https://ejemplo.com/teclado1.jpg"
-  ]
+  "status": "success",
+  "payload": [...],
+  "totalPages": 2,
+  "prevPage": null,
+  "nextPage": 2,
+  "page": 1,
+  "hasPrevPage": false,
+  "hasNextPage": true,
+  "prevLink": null,
+  "nextLink": "/api/products?limit=10&page=2"
 }
 ```
 
 ---
 
-### 2. Gestión de Carritos (`/api/carts`)
+### 2. Carritos (`/api/carts`)
 
 | Método | Endpoint | Descripción |
 | :--- | :--- | :--- |
-| **POST** | `/api/carts` | Crea un nuevo carrito vacío (el `id` se autogenera). |
-| **GET** | `/api/carts/:cid` | Retorna el listado de productos pertenecientes al carrito con el ID especificado. |
-| **POST** | `/api/carts/:cid/product/:pid` | Agrega un producto a un carrito específico (agrega de a 1 unidad. Si ya existe, incrementa la cantidad). |
-
-#### Formato del Objeto de Retorno para los Productos en Carritos
-```json
-[
-  {
-    "product": "prod_1717900000000",
-    "quantity": 3
-  }
-]
-```
+| **POST** | `/api/carts` | Crea un nuevo carrito vacío en MongoDB. |
+| **GET** | `/api/carts/:cid` | Devuelve el carrito desglosando la información de cada producto mediante `populate`. |
+| **POST** | `/api/carts/:cid/product/:pid` | Agrega un producto al carrito o incrementa su cantidad. |
+| **DELETE** | `/api/carts/:cid/products/:pid` | Elimina un producto específico del carrito. |
+| **PUT** | `/api/carts/:cid` | Reemplaza la lista entera de productos por el arreglo enviado en el `req.body`. |
+| **PUT** | `/api/carts/:cid/products/:pid` | Actualiza únicamente la cantidad del producto especificado (`{ "quantity": 5 }`). |
+| **DELETE** | `/api/carts/:cid` | Vacía todos los productos del carrito. |
 
 ---
 
-## Pruebas de Funcionamiento
-
-Puedes probar todos los endpoints utilizando clientes HTTP como **Postman**, **Insomnia** o la extensión **Thunder Client** en VS Code. No se requiere ninguna interfaz gráfica.
+## 📝 Autor
+Desarrollado para el curso de **Programación Backend I - CoderHouse**.
